@@ -1,0 +1,117 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #ffffff;
+    color: #333;
+    /* background-image: url(./assets/background.avif); */
+    background: linear-gradient(135deg, lightgreen, yellow);
+    background-size: cover;
+}
+a{
+    text-decoration: none;
+}
+
+header {
+    background-color: #000000;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5rem;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.game-blocks {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+   
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+}
+
+.game-block {
+    height: 200px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 40px;
+    border-radius: 10px;
+    display: flex;
+    margin-right: 2rem;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+    border: 2px solid black;
+}
+
+.game-block:hover {
+    background-color: #45a049;
+    transform: scale(1.03) ;
+    box-shadow: 0 0  8px 2px rgb(204, 51, 255);
+}
+
+.game-block h2 {
+    font-size: 1.5rem;
+}
+
+footer {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+footer p {
+    font-size: 1rem;
+}
+
+#game1{
+    background-image: url(./assets/snake.png);
+    background-position: center;
+    background-size: cover;
+}
+#game3{
+    background-image: url(./assets/mind.avif);
+    background-position: center;
+    background-size: cover;
+}
+#game2{
+    background-image: url(./assets/rock-paper-scissors-banner_107791-8387.avif);
+    background-position: center;
+    background-size: cover;
+}
+#game4{
+    background-image: url(./assets/Screenshot\ 2024-09-22\ 220750.png);
+    background-position: center;
+    background-size: cover;
+}
+
+#game5{
+    background-image: url(./assets/mines.jpg);
+    background-position: center;
+    background-size: cover;
+}
+#game6{
+    background-image: url(./assets/WhatsApp\ Image\ 2024-09-23\ at\ 14.29.15_8278da67.jpg);
+    background-position: center;
+    background-size: cover;
+}

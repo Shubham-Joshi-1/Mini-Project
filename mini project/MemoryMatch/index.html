@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mind Match Game</title>
+   
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=New+Tegomin&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'New Tegomin', serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: linear-gradient(135deg, lightgreen, yellow);
+            color: #333;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(6, 100px);
+            gap: 10px;
+        }
+
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            border-radius: 10px;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .card .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card .card-front, .card .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+        }
+
+        .card .card-front {
+            background-color: #e100ff;
+            color: white;
+        }
+
+        .card .card-back {
+            background-color: #FFF;
+            color: black;
+            transform: rotateY(180deg);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            margin-right: 20px;
+        }
+
+        .score {
+            margin-bottom: 20px;
+            position: relative;
+            left: -50px;
+        }
+
+        .score p {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin: 10px 0;
+        }
+
+        #restart-btn {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            font-weight: 070;
+            background: linear-gradient(135deg, rgb(253, 32, 172), rgb(177, 10, 255));
+            color: rgb(0, 0, 0);
+            position: relative;
+            left: -50px;
+            border: 2px solid black;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #restart-btn:hover {
+            background-color: #555;
+        }
+
+        .brain-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            flex: 1;
+        }
+
+        .brain-container #name {
+            font-weight: 800;
+            font-size: 50px;
+            position: relative;
+            right: -50px;
+        }
+
+        .brain-image {
+            width: 400px;
+            height: auto;
+            position: relative;
+            right: -100px;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bg-music" loop>
+        <!-- <source src="./sounds/background.mp3" type="audio/mpeg">
+        Your browser does not support the audio tag. -->
+    </audio>
+
+    <main>
+        <div class="game-container">
+            <div class="sidebar">
+                <div class="score">
+                    <p>Moves: <span id="moves">0</span></p>
+                    <p>Matches: <span id="matches">0</span></p>
+                </div>
+                <button id="restart-btn">Restart Game</button>
+            </div>
+
+            <div class="grid">
+             
+            </div>
+
+            <div class="brain-container">
+                <h1 id="name">MEMORY MATCH</h1>
+                <img src="./assets2/brain.png" alt="Brain" class="brain-image">
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p></p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script>
+        const cardsArray = [
+            { name: 'apple', img: './assets2/apple.avif', id: 1 },
+            { name: 'avacado', img: './assets2/avacado.avif', id: 2 },
+            { name: 'banana', img: './assets2/banana.avif', id: 3 },
+            { name: 'cherry', img: './assets2/cherry.avif', id: 4 },
+            { name: 'gauva', img: './assets2/gauva.avif', id: 5 },
+            { name: 'gragon', img: './assets2/gragon.avif', id: 6 },
+            { name: 'grapes', img: './assets2/grapes.avif', id: 7 },
+            { name: 'kiwi', img: './assets2/kiwi.avif', id: 8 },
+            { name: 'lemon', img: './assets2/lemon.avif', id: 9 },
+            { name: 'litchi', img: './assets2/litchi.avif', id: 10 },
+            { name: 'mango', img: './assets2/mango.avif', id: 11 },
+            { name: 'orange', img: './assets2/orange.avif', id: 12 },
+            { name: 'papaya', img: './assets2/papaya.avif', id: 13 },
+            { name: 'peach', img: './assets2/peach.avif', id: 14 },
+            { name: 'pineaple', img: './assets2/pineapple.avif', id: 15 },
+            { name: 'pomi', img: './assets2/pomi.avif', id: 16 },
+            { name: 'atraberry', img: './assets2/straberry.avif', id: 17 },
+            { name: 'watermelon', img: './assets2/watermelon.avif', id: 18 },
+        ];
+
+        const pairedCards = [...cardsArray, ...cardsArray];
+
+        let moves = 0;
+        let matches = 0;
+        let firstCard = null;
+        let secondCard = null;
+        let preventClick = false;
+
+        const grid = document.querySelector('.grid');
+        const movesDisplay = document.getElementById('moves');
+        const matchesDisplay = document.getElementById('matches');
+        const restartBtn = document.getElementById('restart-btn');
+       
+        const bgMusic = new Audio('./sounds/gamesound.mp3');
+        const clickSound = new Audio('./sounds/click.mp3');
+        const matchSound = new Audio('./sounds/match.mp3');
+        const mismatchSound = new Audio('./sounds/mismatch.mp3');
+        const winSound = new Audio('./sounds/win.mp3');
+        const restartSound = new Audio('./sounds/restart.mp3');
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createBoard() {
+            shuffle(pairedCards);
+            grid.innerHTML = '';
+            pairedCards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.name = card.name;
+                
+                const cardInner = document.createElement('div');
+                cardInner.classList.add('card-inner');
+                
+                const cardFront = document.createElement('div');
+                cardFront.classList.add('card-front');
+                cardFront.textContent = '?';
+                
+                const cardBack = document.createElement('div');
+                cardBack.classList.add('card-back');
+                
+                const img = document.createElement('img');
+                img.src = card.img;
+                img.alt = card.name;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                cardBack.appendChild(img);
+
+                cardInner.appendChild(cardFront);
+                cardInner.appendChild(cardBack);
+                cardElement.appendChild(cardInner);
+                
+                grid.appendChild(cardElement);
+
+                cardElement.addEventListener('click', flipCard);
+            });
+        }
+
+        function flipCard() {
+            if (preventClick || this === firstCard || this.classList.contains('flipped')) return;
+
+            if (moves === 0) {
+                bgMusic.play();
+            }
+            
+            clickSound.play();
+
+            this.classList.add('flipped');
+            
+            if (!firstCard) {
+                firstCard = this;
+            } else {
+                secondCard = this;
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            preventClick = true;
+            const isMatch = firstCard.dataset.name === secondCard.dataset.name;
+
+            setTimeout(() => {
+                if (isMatch) {
+                    matchSound.play();
+
+                    firstCard.removeEventListener('click', flipCard);
+                    secondCard.removeEventListener('click', flipCard);
+                    matches++;
+                    matchesDisplay.textContent = matches;
+
+                    if (matches === pairedCards.length / 2) {
+                        winSound.play(); 
+                        partyPopperEffect()
+                        //setTimeout((alert('You won!')),2000);
+                    }
+                } else {
+                    mismatchSound.play(); 
+
+                    firstCard.classList.remove('flipped');
+                    secondCard.classList.remove('flipped');
+                }
+
+                resetTurn();
+            }, 1000);
+            
+            moves++;
+            movesDisplay.textContent = moves;
+        }
+
+        function resetTurn() {
+            firstCard = null;
+            secondCard = null;
+            preventClick = false;
+        }
+
+        restartBtn.addEventListener('click', () => {
+            clickSound.play(); 
+            moves = 0;
+            matches = 0;
+            movesDisplay.textContent = 0;
+            matchesDisplay.textContent = 0;
+            createBoard();
+            restartBackgroundMusic();
+        });
+
+        function restartBackgroundMusic() {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            bgMusic.play();
+        }
+
+    
+        window.onload = () => {
+            bgMusic.play();
+        };
+        
+        function partyPopperEffect() {
+            
+            confetti({
+                particleCount: 250,
+                spread: 100,
+                origin: { y: 0.7 }
+            });
+        } 
+
+        createBoard();
+    </script>
+</body>
+</html>

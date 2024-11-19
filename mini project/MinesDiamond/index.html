@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diamonds & Bombs Game</title>
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, lightgreen, yellow);
+            color: #333;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(6, 60px);
+            grid-gap: 15px;
+        }
+
+        .tile {
+            width: 70px;
+            height: 70px;
+            background-color: #2700e8;
+        
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.3s ease; /* Transition for enlarging effect */
+        }
+
+        .tile.clicked {
+            cursor: default;
+            background-color: #d3d3d3;
+            border: 2px solid black ;
+        }
+
+        .info {
+            margin: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+        <h1>MINES AND DIAMONDS</h1>
+
+
+    <main>
+        <div class="game-container">
+            <div id="board"></div>
+        </div>
+        <div class="info">
+            <p>Diamonds found: <span id="diamondsFound">0</span></p>
+        </div>
+        <button id="restartBtn">Restart Game</button>
+    </main>
+
+
+
+    <script>
+        const boardSize = 6;
+        const totalDiamonds = 26;
+        const totalBombs = 10;
+
+        let diamondsFound = 0;
+        let gameOver = false;
+
+        const boardElement = document.getElementById('board');
+        const diamondsFoundElement = document.getElementById('diamondsFound');
+        const restartBtn = document.getElementById('restartBtn');
+
+        const clickSound = new Audio('./sounds/click.mp3');
+        const bombSound = new Audio('./sounds/bomb.mp3');
+        const diamondSound = new Audio('./sounds/diamond.mp3');
+
+        let board = [];
+
+        function createBoard() {
+            boardElement.innerHTML = '';  
+            diamondsFound = 0;
+            gameOver = false;
+            diamondsFoundElement.textContent = diamondsFound;
+
+            board = Array(boardSize).fill().map(() => Array(boardSize).fill({}));
+
+            let diamondsPlaced = 0;
+            let bombsPlaced = 0;
+
+            // Randomly place diamonds
+            while (diamondsPlaced < totalDiamonds) {
+                const x = Math.floor(Math.random() * boardSize);
+                const y = Math.floor(Math.random() * boardSize);
+                if (!board[x][y].diamond && !board[x][y].bomb) {
+                    board[x][y] = { diamond: true };
+                    diamondsPlaced++;
+                }
+            }
+
+            while (bombsPlaced < totalBombs) {
+                const x = Math.floor(Math.random() * boardSize);
+                const y = Math.floor(Math.random() * boardSize);
+                if (!board[x][y].diamond && !board[x][y].bomb) {
+                    board[x][y] = { bomb: true };
+                    bombsPlaced++;
+                }
+            }
+
+
+            for (let x = 0; x < boardSize; x++) {
+                for (let y = 0; y < boardSize; y++) {
+                    const tile = document.createElement('div');
+                    tile.classList.add('tile');
+                    tile.dataset.x = x;
+                    tile.dataset.y = y;
+                    tile.addEventListener('click', () => revealTile(x, y));
+                    boardElement.appendChild(tile);
+                }
+            }
+        }
+
+        function revealTile(x, y) {
+            if (gameOver) return;  
+
+            const tile = document.querySelector(`.tile[data-x="${x}"][data-y="${y}"]`);
+            if (tile.classList.contains('clicked')) return;
+
+            tile.classList.add('clicked');
+            clickSound.play();  
+
+            const cell = board[x][y];
+
+            if (cell.diamond) {
+                tile.textContent = '💎';
+                diamondsFound++;
+                diamondsFoundElement.textContent = diamondsFound;
+                diamondSound.play();  
+                if (diamondsFound === totalDiamonds) {
+
+                    gameOver = true;
+                }
+            } else if (cell.bomb) {
+                revealBomb(tile);  
+                bombSound.play();  
+                setTimeout(() => {
+                    revealAllBombs();  
+                    gameOver = true;
+                }, 500);  
+            }
+        }
+
+        function revealBomb(clickedTile) {
+            clickedTile.textContent = '💣';
+            clickedTile.classList.add('clicked');
+            clickedTile.style.transform = 'scale(2)'; 
+
+            
+            setTimeout(() => {
+                clickedTile.style.transform = 'scale(1)';
+            }, 2000);  
+        }
+
+        function revealAllBombs() {
+            for (let x = 0; x < boardSize; x++) {
+                for (let y = 0; y < boardSize; y++) {
+                    const tile = document.querySelector(`.tile[data-x="${x}"][data-y="${y}"]`);
+                    if (board[x][y].bomb && !tile.classList.contains('clicked')) {
+                        tile.classList.add('clicked');
+                        tile.textContent = '💣';
+                    }
+                }
+            }
+        }
+
+        restartBtn.addEventListener('click', createBoard);
+
+        createBoard();
+    </script>
+</body>
+</html>

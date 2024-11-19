@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, lightgreen, yellow);
+        }
+
+        #gameContainer {
+            text-align: center;
+        }
+
+        #gameTitle {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #message {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        #turnIndicator {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            background-color: #00d9ff;
+            border:2px solid #1c77ff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .cell:hover {
+            background-color: #1c77ff;
+        }
+
+        #restartButton {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #restartButton:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <h1 id="gameTitle">TIC TAC TOE</h1>
+        <div id="message"></div>
+        <div id="turnIndicator">PLAYER "X" TURN</div>
+        <div id="board" class="grid"></div>
+        <button id="restartButton">Restart Game</button>
+    </div>
+
+    <!-- Add Canvas Confetti script -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <script>
+        const board = document.getElementById('board');
+        const messageDiv = document.getElementById('message');
+        const turnIndicator = document.getElementById('turnIndicator');
+        const restartButton = document.getElementById('restartButton');
+        let currentPlayer = 'X';
+        const gameBoard = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']];
+
+        // Create audio elements
+        const clickSound = new Audio('./music/click.mp3'); 
+        const winSound = new Audio('./music/win.mp3'); 
+        const tieSound = new Audio('./music/tie.mp3');
+        const gamesound = new Audio('./music/gamesound.mp3');
+        const turnSound = new Audio('./music/'); 
+        const restartSound = new Audio('./music/click.mp3'); 
+
+        function printBoard() {
+            gamesound.play();
+            board.innerHTML = ''; 
+            gameBoard.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'cell';
+                    cellDiv.textContent = cell === ' ' ? '' : cell;
+                    cellDiv.addEventListener('click', () => handleCellClick(rowIndex, colIndex));
+                    board.appendChild(cellDiv);
+                });
+            });
+        }
+
+        function handleCellClick(row, col) {
+            if (gameBoard[row][col] === ' ' && !checkWinner()) {
+                gameBoard[row][col] = currentPlayer;
+                clickSound.play(); 
+
+                if (checkWinner()) {
+                    messageDiv.textContent = `Player ${currentPlayer} wins!`;
+                    winSound.play(); 
+                    partyPopperEffect();  // Call the confetti effect
+                } else if (isFull()) {
+                    messageDiv.textContent = "It's a tie!";
+                    tieSound.play(); 
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    turnSound.play(); 
+                    turnIndicator.textContent = `PLAYER "${currentPlayer}" TURN`; 
+                }
+                printBoard();
+            }
+        }
+
+        function checkWinner() {
+
+            for (let i = 0; i < 3; i++) {
+                if (gameBoard[i][0] === gameBoard[i][1] && gameBoard[i][1] === gameBoard[i][2] && gameBoard[i][0] !== ' ') {
+                    return true;
+                }
+                if (gameBoard[0][i] === gameBoard[1][i] && gameBoard[1][i] === gameBoard[2][i] && gameBoard[0][i] !== ' ') {
+                    return true;
+                }
+            }
+            if (gameBoard[0][0] === gameBoard[1][1] && gameBoard[1][1] === gameBoard[2][2] && gameBoard[0][0] !== ' ') {
+                return true;
+            }
+            if (gameBoard[0][2] === gameBoard[1][1] && gameBoard[1][1] === gameBoard[2][0] && gameBoard[0][2] !== ' ') {
+                return true;
+            }
+            return false;
+        }
+
+        function isFull() {
+            return gameBoard.every(row => row.every(cell => cell !== ' '));
+        }
+
+        function restartGame() {
+            clickSound.play(); 
+            currentPlayer = 'X';
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    gameBoard[i][j] = ' '; 
+                }
+            }
+            messageDiv.textContent = ''; 
+            turnIndicator.textContent = `Turn: X`; 
+            printBoard(); 
+        }
+
+        function partyPopperEffect() {
+            // Fire the confetti effect
+            confetti({
+                particleCount: 250,
+                spread: 100,
+                origin: { y: 0.7 }
+            });
+        }
+
+        restartButton.addEventListener('click', restartGame);
+
+        printBoard();
+    </script>
+</body>
+</html>
